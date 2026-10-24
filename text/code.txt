@@ -1,0 +1,1194 @@
+import { useState } from "react";
+
+const bloodGroups = [
+  { group: "O+", units: 186, status: "Healthy stock", color: "green", width: "92%" },
+  { group: "O-", units: 22, status: "Critical shortage", color: "red", width: "11%" },
+  { group: "A+", units: 140, status: "Healthy stock", color: "green", width: "68%" },
+  { group: "A-", units: 38, status: "Running low", color: "yellow", width: "19%" },
+  { group: "B+", units: 97, status: "Healthy stock", color: "green", width: "49%" },
+  { group: "B-", units: 19, status: "Critical shortage", color: "red", width: "10%" },
+  { group: "AB+", units: 64, status: "Running low", color: "yellow", width: "31%" },
+  { group: "AB-", units: 11, status: "Critical shortage", color: "red", width: "8%" },
+];
+
+const donors = [
+  {
+    name: "Aditi Rao",
+    initials: "AR",
+    group: "O+",
+    distance: "1.2 km",
+    donated: "2 months ago",
+  },
+  {
+    name: "Vikram Singh",
+    initials: "VS",
+    group: "A-",
+    distance: "2.4 km",
+    donated: "5 months ago",
+  },
+  {
+    name: "Meera Nair",
+    initials: "MN",
+    group: "B+",
+    distance: "3.1 km",
+    donated: "1 month ago",
+  },
+];
+
+function App() {
+  const [page, setPage] = useState("home");
+  const [darkMode, setDarkMode] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+
+  const [messages, setMessages] = useState([
+    {
+      type: "bot",
+      text: "Hi! I’m BloodLink Assistant. How can I help you today?",
+    },
+  ]);
+
+  const [message, setMessage] = useState("");
+
+  const navigate = (newPage) => {
+    setPage(newPage);
+    setMobileMenu(false);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const sendMessage = () => {
+    if (!message.trim()) return;
+
+    const userMessage = message.toLowerCase();
+
+    let reply =
+      "I can help you with finding blood, requesting blood, donor registration and BloodLink navigation.";
+
+    if (userMessage.includes("donor")) {
+      reply = "You can find nearby donors from the Find blood section.";
+    }
+
+    if (userMessage.includes("blood")) {
+      reply =
+        "You can check blood group availability and find nearby donors from BloodLink.";
+    }
+
+    if (userMessage.includes("request")) {
+      reply =
+        "Go to Request blood and submit the required blood group and units.";
+    }
+
+    if (userMessage.includes("register")) {
+      reply =
+        "Go to Donor dashboard and register yourself as a blood donor.";
+    }
+
+    setMessages([
+      ...messages,
+      {
+        type: "user",
+        text: message,
+      },
+      {
+        type: "bot",
+        text: reply,
+      },
+    ]);
+
+    setMessage("");
+  };
+
+  return (
+    <div
+      className={
+        darkMode
+          ? "min-h-screen bg-[#171113] text-white"
+          : "min-h-screen bg-[#faf7f6] text-[#171113]"
+      }
+    >
+      {/* HEADER */}
+
+      <header
+        className={`sticky top-0 z-50 border-b ${
+          darkMode
+            ? "border-[#3a3032] bg-[#171113]/95"
+            : "border-[#e7dddd] bg-[#faf7f6]/95"
+        } backdrop-blur`}
+      >
+        <div className="mx-auto flex h-[82px] max-w-[1450px] items-center justify-between px-6 lg:px-10">
+
+          {/* LOGO */}
+
+          <button
+            onClick={() => navigate("home")}
+            className="flex items-center gap-3"
+          >
+            <span className="text-[32px] text-[#c5163f]">♦</span>
+
+            <span className="text-[22px] font-extrabold">
+              BloodLink
+            </span>
+          </button>
+
+          {/* DESKTOP NAV */}
+
+          <nav className="hidden items-center gap-2 lg:flex">
+
+            <NavButton
+              active={page === "home"}
+              onClick={() => navigate("home")}
+            >
+              Home
+            </NavButton>
+
+            <NavButton
+              active={page === "find"}
+              onClick={() => navigate("find")}
+            >
+              Find blood
+            </NavButton>
+
+            <NavButton
+              active={page === "request"}
+              onClick={() => navigate("request")}
+            >
+              Request blood
+            </NavButton>
+
+            <NavButton
+              active={page === "donor"}
+              onClick={() => navigate("donor")}
+            >
+              Donor dashboard
+            </NavButton>
+
+          </nav>
+
+          {/* RIGHT */}
+
+          <div className="hidden items-center gap-3 sm:flex">
+
+            <button
+              onClick={() => setLocationOpen(true)}
+              className="flex items-center gap-2 rounded-full border border-[#d9cdcd] bg-white px-5 py-3 text-[16px] font-medium text-black hover:border-[#c5163f]"
+            >
+              📍 Set location
+            </button>
+
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-[#d9cdcd] bg-white text-black"
+            >
+              {darkMode ? "☀" : "☾"}
+            </button>
+
+          </div>
+
+          {/* MOBILE */}
+
+          <button
+            onClick={() => setMobileMenu(true)}
+            className="rounded-xl border border-[#ddd0d0] bg-white p-3 lg:hidden"
+          >
+            ☰
+          </button>
+
+        </div>
+      </header>
+
+      {/* MOBILE MENU */}
+
+      {mobileMenu && (
+        <div className="fixed inset-0 z-[100] bg-black/40 lg:hidden">
+
+          <div className="ml-auto h-full w-[85%] max-w-sm bg-[#faf7f6] p-6">
+
+            <div className="flex items-center justify-between">
+
+              <div className="text-xl font-extrabold">
+                BloodLink
+              </div>
+
+              <button
+                onClick={() => setMobileMenu(false)}
+                className="rounded-full bg-white p-3"
+              >
+                ✕
+              </button>
+
+            </div>
+
+            <div className="mt-10 space-y-3">
+
+              <MobileButton
+                onClick={() => navigate("home")}
+              >
+                Home
+              </MobileButton>
+
+              <MobileButton
+                onClick={() => navigate("find")}
+              >
+                Find blood
+              </MobileButton>
+
+              <MobileButton
+                onClick={() => navigate("request")}
+              >
+                Request blood
+              </MobileButton>
+
+              <MobileButton
+                onClick={() => navigate("donor")}
+              >
+                Donor dashboard
+              </MobileButton>
+
+            </div>
+
+            <button
+              onClick={() => setLocationOpen(true)}
+              className="mt-8 w-full rounded-2xl border bg-white p-4 text-left"
+            >
+              📍 Set location
+            </button>
+
+          </div>
+        </div>
+      )}
+
+      {/* PAGE */}
+
+      {page === "home" && (
+        <>
+          {/* HERO */}
+
+          <section className="mx-auto max-w-[1450px] px-6 pb-16 pt-20 lg:px-10 lg:pt-28">
+
+            <div className="grid items-center gap-12 lg:grid-cols-2">
+
+              <div>
+
+                <div className="mb-8 inline-flex rounded-full bg-[#fbecef] px-4 py-2 text-[15px] font-semibold text-[#bc173d]">
+                  <span className="mr-2">●</span>
+                  Live network · 214 donors active near you
+                </div>
+
+                <h1 className="text-[55px] font-extrabold leading-[1.08] tracking-[-2px] sm:text-[68px]">
+
+                  Find blood.
+                  <br />
+
+                  Find hope.{" "}
+
+                  <span className="text-[#c5163f]">
+                    Faster.
+                  </span>
+
+                </h1>
+
+                <p className="mt-7 max-w-[650px] text-[18px] leading-8 text-[#574d50]">
+
+                  BloodLink connects patients, verified donors,
+                  hospitals and blood banks in one place — so a
+                  compatible donor is minutes away, not hours of
+                  phone calls.
+
+                </p>
+
+                <div className="mt-9 flex flex-wrap gap-3">
+
+                  <button
+                    onClick={() => navigate("find")}
+                    className="rounded-full bg-[#c5163f] px-8 py-4 text-[17px] font-bold text-white shadow-lg"
+                  >
+                    🔍 Find blood
+                  </button>
+
+                  <button
+                    onClick={() => navigate("request")}
+                    className="rounded-full border border-[#d9cdcd] bg-white px-8 py-4 text-[17px] font-semibold"
+                  >
+                    Request blood now
+                  </button>
+
+                </div>
+
+                <div className="mt-12 grid grid-cols-3 gap-6">
+
+                  <Stat
+                    number="12,400+"
+                    text="Verified donors"
+                  />
+
+                  <Stat
+                    number="38"
+                    text="Partner hospitals"
+                  />
+
+                  <Stat
+                    number="<9 min"
+                    text="Avg. donor response"
+                  />
+
+                </div>
+
+              </div>
+
+              {/* RADAR */}
+
+              <div className="flex justify-center">
+
+                <div className="relative h-[430px] w-[430px] max-w-[90vw]">
+
+                  <div className="absolute inset-8 rounded-full border border-[#efcfd5]" />
+
+                  <div className="absolute inset-20 rounded-full border border-[#efcfd5]" />
+
+                  <div className="absolute inset-32 rounded-full border border-[#efcfd5]" />
+
+                  <div className="absolute inset-44 rounded-full border border-[#efcfd5]" />
+
+                  <div className="absolute left-1/2 top-1/2 h-[1px] w-[45%] origin-left -rotate-[75deg] bg-[#e8bfc7]" />
+
+                  <div className="absolute left-[68%] top-[23%] h-7 w-7 rounded-full bg-[#d5e8df] p-1">
+                    <div className="h-full w-full rounded-full bg-[#208052]" />
+                  </div>
+
+                  <div className="absolute left-[20%] top-[31%] h-7 w-7 rounded-full bg-[#d5e8df] p-1">
+                    <div className="h-full w-full rounded-full bg-[#208052]" />
+                  </div>
+
+                  <div className="absolute left-[74%] top-[65%] h-7 w-7 rounded-full bg-[#d5e8df] p-1">
+                    <div className="h-full w-full rounded-full bg-[#208052]" />
+                  </div>
+
+                  <div className="absolute left-[27%] top-[71%] h-7 w-7 rounded-full bg-[#d5e8df] p-1">
+                    <div className="h-full w-full rounded-full bg-[#208052]" />
+                  </div>
+
+                  <div className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#c5163f] text-3xl text-white shadow-[0_0_0_13px_rgba(197,22,63,.08)]">
+                    💧
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          </section>
+
+          {/* AVAILABILITY */}
+
+          <section className="mx-auto max-w-[1450px] px-6 py-14 lg:px-10">
+
+            <div className="mb-10 flex items-center justify-between rounded-[28px] bg-[#f2edec] px-7 py-6">
+
+              <div>
+
+                <div className="text-[18px] font-bold">
+                  📍 Searching from{" "}
+                  <span className="text-[#a9989b]">
+                    Delhi NCR
+                  </span>
+                </div>
+
+                <div className="mt-1 text-[#8d7d80]">
+                  Availability below updates for your area
+                </div>
+
+              </div>
+
+              <button
+                onClick={() => setLocationOpen(true)}
+                className="hidden rounded-full bg-white px-6 py-3 font-semibold sm:block"
+              >
+                Change location
+              </button>
+
+            </div>
+
+            <h2 className="text-[36px] font-extrabold tracking-[-1px]">
+              Live blood group availability
+            </h2>
+
+            <p className="mt-2 text-[18px] text-[#6d5e61]">
+              Reported by partner blood banks in your area,
+              updated continuously.
+            </p>
+
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+              {bloodGroups.map((blood) => (
+                <BloodCard
+                  key={blood.group}
+                  {...blood}
+                />
+              ))}
+
+            </div>
+
+          </section>
+
+          {/* DONORS */}
+
+          <section className="mx-auto max-w-[1450px] px-6 py-20 lg:px-10">
+
+            <div className="mb-10 flex items-end justify-between">
+
+              <div>
+
+                <h2 className="text-[38px] font-extrabold">
+                  Donors near you
+                </h2>
+
+                <p className="mt-2 text-[18px] text-[#6d5e61]">
+                  A snapshot of available donors closest to your
+                  location right now.
+                </p>
+
+              </div>
+
+              <button
+                onClick={() => navigate("find")}
+                className="hidden font-bold text-[#c5163f] sm:block"
+              >
+                See all donors →
+              </button>
+
+            </div>
+
+            <div className="grid gap-5 lg:grid-cols-3">
+
+              {donors.map((donor) => (
+                <DonorCard
+                  key={donor.name}
+                  {...donor}
+                />
+              ))}
+
+            </div>
+
+          </section>
+
+          {/* DONOR CTA */}
+
+          <section className="mx-auto max-w-[1450px] px-6 py-10 lg:px-10">
+
+            <div className="grid gap-10 rounded-[30px] bg-[#1b1114] p-8 text-white sm:p-12 lg:grid-cols-2 lg:p-16">
+
+              <div>
+
+                <h2 className="text-[31px] font-extrabold">
+                  Become a donor. Save a life you’ll never meet.
+                </h2>
+
+                <p className="mt-5 text-[18px] leading-8 text-[#ded3d5]">
+                  One donation can help up to three patients.
+                  Registered donors control their own availability
+                  and only get notified for genuine, verified
+                  requests near them.
+                </p>
+
+                <div className="mt-8 space-y-4">
+
+                  <div>✓ Get notified only for matching blood groups nearby</div>
+                  <div>✓ Toggle your availability anytime</div>
+                  <div>✓ Track your donation history and eligibility</div>
+
+                </div>
+
+                <button
+                  onClick={() => navigate("donor")}
+                  className="mt-9 rounded-full bg-[#c5163f] px-8 py-4 font-bold"
+                >
+                  Register as a donor
+                </button>
+
+              </div>
+
+              <div className="flex items-center">
+
+                <div className="w-full rounded-[20px] bg-[#292023] p-7">
+
+                  <InfoRow
+                    text="Donors registered this month"
+                    value="1,842"
+                  />
+
+                  <InfoRow
+                    text="Lives supported this year"
+                    value="9,510"
+                  />
+
+                  <InfoRow
+                    text="Avg. time to first match"
+                    value="7.4 min"
+                    last
+                  />
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </section>
+
+          {/* TRUST */}
+
+          <section className="mx-auto max-w-[1450px] px-6 py-20 lg:px-10">
+
+            <h2 className="text-[39px] font-extrabold">
+              Built to be trusted in an emergency
+            </h2>
+
+            <div className="mt-12 grid gap-14 md:grid-cols-3">
+
+              <TrustCard
+                icon="🛡"
+                title="Verified donor identity"
+                text="Donor profiles are checked before they can appear in search results — not just self-reported and published instantly."
+              />
+
+              <TrustCard
+                icon="🔒"
+                title="Contact stays gated"
+                text="Requesting contact routes through a verified request — a donor's phone number is never shown to the public directly."
+              />
+
+              <TrustCard
+                icon="◷"
+                title="Monitored around the clock"
+                text="Emergency requests are never queued behind business hours — the matching pipeline runs 24/7."
+              />
+
+            </div>
+
+          </section>
+
+          {/* FOOTER */}
+
+          <Footer navigate={navigate} />
+        </>
+      )}
+
+      {/* OTHER PAGES */}
+
+      {page !== "home" && (
+        <OtherPage
+          page={page}
+          navigate={navigate}
+        />
+      )}
+
+      {/* CHATBOT */}
+
+      {chatOpen && (
+        <div className="fixed bottom-24 right-5 z-[80] w-[min(390px,calc(100vw-30px))] overflow-hidden rounded-3xl border bg-[#faf7f6] shadow-2xl">
+
+          <div className="flex items-center justify-between bg-[#c5163f] px-5 py-4 text-white">
+
+            <div>
+              <div className="font-bold">
+                BloodLink Assistant
+              </div>
+
+              <div className="text-xs">
+                Online now
+              </div>
+            </div>
+
+            <button onClick={() => setChatOpen(false)}>
+              ✕
+            </button>
+
+          </div>
+
+          <div className="h-72 space-y-3 overflow-y-auto p-4">
+
+            {messages.map((msg, index) => (
+
+              <div
+                key={index}
+                className={`flex ${
+                  msg.type === "user"
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
+              >
+
+                <div
+                  className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm ${
+                    msg.type === "user"
+                      ? "bg-[#c5163f] text-white"
+                      : "bg-white text-[#42383b]"
+                  }`}
+                >
+                  {msg.text}
+                </div>
+
+              </div>
+
+            ))}
+
+          </div>
+
+          <div className="flex gap-2 border-t p-3">
+
+            <input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  sendMessage();
+                }
+              }}
+              placeholder="Type your question..."
+              className="min-w-0 flex-1 rounded-full border bg-white px-4 py-3 text-sm outline-none"
+            />
+
+            <button
+              onClick={sendMessage}
+              className="rounded-full bg-[#c5163f] px-4 font-bold text-white"
+            >
+              Send
+            </button>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* CHAT BUTTON */}
+
+      <button
+        onClick={() => setChatOpen(!chatOpen)}
+        className="fixed bottom-6 right-5 z-[80] flex h-16 w-16 items-center justify-center rounded-full bg-[#c5163f] text-2xl text-white shadow-xl ring-8 ring-[#c5163f]/10"
+      >
+        {chatOpen ? "✕" : "◉"}
+      </button>
+
+      {/* LOCATION MODAL */}
+
+      {locationOpen && (
+        <LocationModal
+          close={() => setLocationOpen(false)}
+        />
+      )}
+
+    </div>
+  );
+}
+
+/* NAV BUTTON */
+
+function NavButton({ children, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-full px-5 py-3 text-[17px] ${
+        active
+          ? "bg-[#fbecef] font-semibold text-[#b7123a]"
+          : "text-[#4c4547] hover:bg-white"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* MOBILE BUTTON */
+
+function MobileButton({ children, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="block w-full rounded-2xl bg-white px-5 py-4 text-left text-lg"
+    >
+      {children}
+    </button>
+  );
+}
+
+/* STAT */
+
+function Stat({ number, text }) {
+  return (
+    <div>
+      <div className="text-[25px] font-extrabold">
+        {number}
+      </div>
+
+      <div className="mt-1 text-[15px] text-[#847679]">
+        {text}
+      </div>
+    </div>
+  );
+}
+
+/* BLOOD CARD */
+
+function BloodCard({
+  group,
+  units,
+  status,
+  color,
+  width,
+}) {
+  const bar =
+    color === "green"
+      ? "bg-[#238356]"
+      : color === "yellow"
+      ? "bg-[#c3840c]"
+      : "bg-[#c5163f]";
+
+  const text =
+    color === "green"
+      ? "text-[#18804e]"
+      : color === "yellow"
+      ? "text-[#bd7a08]"
+      : "text-[#c5163f]";
+
+  return (
+    <div className="rounded-[19px] border border-[#e6dada] bg-white p-6">
+
+      <div className="text-[22px] font-extrabold">
+        {group}
+      </div>
+
+      <div className="mt-2 text-[#8b7a7d]">
+        {units} units available
+      </div>
+
+      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#e8e0de]">
+
+        <div
+          className={`h-full rounded-full ${bar}`}
+          style={{
+            width: width,
+          }}
+        />
+
+      </div>
+
+      <div
+        className={`mt-3 flex items-center gap-2 text-[14px] font-semibold ${text}`}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+
+        {status}
+      </div>
+
+    </div>
+  );
+}
+
+/* DONOR CARD */
+
+function DonorCard({
+  name,
+  initials,
+  group,
+  distance,
+  donated,
+}) {
+  return (
+    <div className="rounded-[20px] border border-[#e5dada] bg-white p-6">
+
+      <div className="flex items-center gap-4">
+
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#fbecef] font-bold text-[#bd173d]">
+          {initials}
+        </div>
+
+        <div>
+
+          <div className="flex items-center gap-2 text-[18px] font-bold">
+
+            {name}
+
+            <span className="rounded-md bg-[#fbecef] px-2 py-1 text-xs text-[#bd173d]">
+              {group}
+            </span>
+
+          </div>
+
+          <div className="mt-1 text-sm text-[#208052]">
+            ● Available now
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="mt-5 flex gap-7 text-[15px]">
+
+        <span>
+          <b>{distance} away</b>
+        </span>
+
+        <span>
+          Last donated{" "}
+          <b>{donated}</b>
+        </span>
+
+      </div>
+
+    </div>
+  );
+}
+
+/* INFO ROW */
+
+function InfoRow({ text, value, last }) {
+  return (
+    <div
+      className={`flex items-center justify-between py-4 ${
+        !last ? "border-b border-[#493d40]" : ""
+      }`}
+    >
+      <span className="text-[#e5dadd]">
+        {text}
+      </span>
+
+      <b>{value}</b>
+    </div>
+  );
+}
+
+/* TRUST */
+
+function TrustCard({ icon, title, text }) {
+  return (
+    <div>
+
+      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fbecef] text-2xl">
+        {icon}
+      </div>
+
+      <h3 className="text-[20px] font-bold">
+        {title}
+      </h3>
+
+      <p className="mt-3 text-[17px] leading-7 text-[#685b5e]">
+        {text}
+      </p>
+
+    </div>
+  );
+}
+
+/* FOOTER */
+
+function Footer({ navigate }) {
+  return (
+    <footer className="border-t border-[#e5dada]">
+
+      <div className="mx-auto grid max-w-[1450px] gap-12 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:px-10">
+
+        <div>
+
+          <button
+            onClick={() => navigate("home")}
+            className="text-[21px] font-extrabold"
+          >
+            ♦ BloodLink
+          </button>
+
+          <p className="mt-4 max-w-xs leading-6 text-[#706366]">
+            A prototype UI for a college capstone project —
+            not a live medical service.
+          </p>
+
+        </div>
+
+        <FooterColumn
+          title="Platform"
+          links={[
+            ["Find blood", "find"],
+            ["Request blood", "request"],
+            ["Donor dashboard", "donor"],
+          ]}
+          navigate={navigate}
+        />
+
+        <FooterColumn
+          title="Organizations"
+          links={[
+            ["Hospitals", "request"],
+            ["Blood banks", "find"],
+            ["NGO partners", "donor"],
+          ]}
+          navigate={navigate}
+        />
+
+        <FooterColumn
+          title="Support"
+          links={[
+            ["Safety & verification", "home"],
+            ["Contact", "home"],
+            ["Privacy", "home"],
+          ]}
+          navigate={navigate}
+        />
+
+      </div>
+
+      <div className="mx-auto flex max-w-[1450px] flex-col gap-3 border-t border-[#e5dada] px-6 py-7 text-[#857579] sm:flex-row sm:justify-between lg:px-10">
+
+        <span>
+          © 2026 BloodLink. Prototype for academic use.
+        </span>
+
+        <span>
+          Made for a real-world problem — blood emergencies.
+        </span>
+
+      </div>
+
+    </footer>
+  );
+}
+
+/* FOOTER COLUMN */
+
+function FooterColumn({
+  title,
+  links,
+  navigate,
+}) {
+  return (
+    <div>
+
+      <h4 className="font-semibold text-[#857579]">
+        {title}
+      </h4>
+
+      <div className="mt-5 space-y-4">
+
+        {links.map(([label, key]) => (
+          <button
+            key={label}
+            onClick={() => navigate(key)}
+            className="block text-left text-[17px] text-[#4e4548] hover:text-[#c5163f]"
+          >
+            {label}
+          </button>
+        ))}
+
+      </div>
+
+    </div>
+  );
+}
+
+/* OTHER PAGE */
+
+function OtherPage({ page, navigate }) {
+  const data = {
+    find: {
+      title: "Find blood.",
+      text: "Search verified blood availability and nearby donors.",
+      button: "Search donors",
+    },
+
+    request: {
+      title: "Request blood.",
+      text: "Create a verified emergency request and connect with matching donors.",
+      button: "Submit request",
+    },
+
+    donor: {
+      title: "Donor dashboard.",
+      text: "Manage your donor profile, availability and donation history.",
+      button: "Register as a donor",
+    },
+  };
+
+  const current = data[page];
+
+  const [group, setGroup] = useState("O+");
+  const [units, setUnits] = useState("2");
+  const [success, setSuccess] = useState("");
+
+  const submit = (e) => {
+    e.preventDefault();
+
+    if (page === "find") {
+      setSuccess(
+        `Searching donors for ${group} near Delhi NCR...`
+      );
+    }
+
+    if (page === "request") {
+      setSuccess(
+        `Request created for ${units} unit(s) of ${group}.`
+      );
+    }
+
+    if (page === "donor") {
+      setSuccess(
+        "Your donor registration is ready."
+      );
+    }
+  };
+
+  return (
+    <main className="mx-auto min-h-screen max-w-[1200px] px-6 py-16 lg:py-24">
+
+      <div className="rounded-[32px] border border-[#e5dada] bg-white p-7 shadow-sm sm:p-12">
+
+        <div className="inline-flex rounded-full bg-[#fbecef] px-4 py-2 font-semibold text-[#c5163f]">
+          BloodLink
+        </div>
+
+        <h1 className="mt-6 text-5xl font-extrabold sm:text-6xl">
+          {current.title}
+        </h1>
+
+        <p className="mt-5 max-w-3xl text-lg leading-8 text-[#66585b]">
+          {current.text}
+        </p>
+
+        <form
+          onSubmit={submit}
+          className="mt-10 grid max-w-3xl gap-5 sm:grid-cols-2"
+        >
+
+          <label className="font-semibold">
+            Blood group
+
+            <select
+              value={group}
+              onChange={(e) => setGroup(e.target.value)}
+              className="mt-2 w-full rounded-2xl border p-4 outline-none"
+            >
+
+              {bloodGroups.map((blood) => (
+                <option key={blood.group}>
+                  {blood.group}
+                </option>
+              ))}
+
+            </select>
+
+          </label>
+
+          {page !== "donor" && (
+            <label className="font-semibold">
+              Units needed
+
+              <input
+                type="number"
+                min="1"
+                value={units}
+                onChange={(e) => setUnits(e.target.value)}
+                className="mt-2 w-full rounded-2xl border p-4 outline-none"
+              />
+
+            </label>
+          )}
+
+          <label className="font-semibold sm:col-span-2">
+            Location
+
+            <input
+              defaultValue="Delhi NCR"
+              className="mt-2 w-full rounded-2xl border p-4 outline-none"
+            />
+
+          </label>
+
+          <button
+            className="rounded-full bg-[#c5163f] px-7 py-4 font-bold text-white sm:w-fit"
+          >
+            {current.button}
+          </button>
+
+        </form>
+
+        {success && (
+          <div className="mt-6 rounded-2xl bg-[#eef8f2] p-4 font-semibold text-[#19764a]">
+            {success}
+          </div>
+        )}
+
+        <button
+          onClick={() => navigate("home")}
+          className="mt-10 rounded-full border px-6 py-3 font-semibold"
+        >
+          ← Back to Home
+        </button>
+
+      </div>
+
+    </main>
+  );
+}
+
+/* LOCATION MODAL */
+
+function LocationModal({ close }) {
+  const [location, setLocation] = useState("Delhi NCR");
+
+  return (
+    <div
+      onClick={close}
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-5"
+    >
+
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-3xl bg-[#faf7f6] p-7 shadow-2xl"
+      >
+
+        <div className="flex items-center justify-between">
+
+          <h3 className="text-2xl font-extrabold">
+            Set your location
+          </h3>
+
+          <button
+            onClick={close}
+            className="rounded-full bg-white p-2"
+          >
+            ✕
+          </button>
+
+        </div>
+
+        <p className="mt-3 text-[#6e6063]">
+          Choose an area to personalize nearby donor results.
+        </p>
+
+        <div className="mt-6 flex items-center gap-3 rounded-2xl border bg-white p-4">
+
+          <span>📍</span>
+
+          <input
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="w-full bg-transparent outline-none"
+          />
+
+        </div>
+
+        <button
+          onClick={close}
+          className="mt-5 w-full rounded-full bg-[#c5163f] py-4 font-bold text-white"
+        >
+          Save location
+        </button>
+
+      </div>
+
+    </div>
+  );
+}
+
+export default App;
