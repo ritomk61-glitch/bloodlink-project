@@ -29,6 +29,9 @@ const ChatBot = () => {
     if (text.includes("donor") || text.includes("donate")) {
       return "You can register as a donor from the Become Donor page and manage your availability.";
     }
+    if (text.includes("তৈরি") || text.includes("donate")) {
+      return "BloodLink রিতম ও তার টিম তৈরি করেছে, যাতে একটি প্ল্যাটফর্মের মাধ্যমে রক্তদাতা, রোগী, হাসপাতাল এবং ব্লাড ব্যাংককে একসঙ্গে যুক্ত করা যায়";
+    }
 
     if (
       text.includes("who") &&
